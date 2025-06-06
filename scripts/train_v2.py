@@ -11,7 +11,10 @@ if __name__ == "__main__":
         features, labels, test_size=0.1, random_state=42
     )
     model = factor_model_v2.FactorModel()
-    model.train(X_train, y_train, epochs=100)
+    model.train(X_train, y_train, epochs=1000)
     print(model.evaluate(X_test, y_test))
-    # print(model.save("data/trained_model_200.tf"))
-    print(model.summary())
+    # print(model.save("data/trained_model_v2_100.tf"))
+
+    pred = model.predict(X_test)
+    correct = (pred >= 0.5).astype(int) == y_test.astype(int)
+    print(correct)

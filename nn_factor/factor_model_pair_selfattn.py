@@ -1,11 +1,11 @@
 import numpy as np
 import tensorflow as tf
-from keras import callbacks, layers
+from keras import layers
 
-from nn_factor import transformer
+from nn_factor.network_tools import default_model, positional_encoding, transformer
 
 
-class FactorModel:
+class FactorModelPairSelfAttn(default_model.DefaultModel):
     def __init__(
         self,
         feature_dim: int = 36,
@@ -14,8 +14,8 @@ class FactorModel:
         ff_dim: int = 512,
     ):
         # Create reusable resources
-        self.pos_half = self._create_positional_encoding(feature_dim // 2, embed_dim)
-        self.pos_whole = self._create_positional_encoding(feature_dim, embed_dim)
+        self.pos_half = positional_encoding.linear(feature_dim // 2, embed_dim)
+        self.pos_whole = positional_encoding.linear(feature_dim, embed_dim)
 
         self.shared_block = transformer.TransformerBlock(
             embed_dim=embed_dim, num_heads=num_heads // 2, ff_dim=ff_dim
@@ -60,48 +60,3 @@ class FactorModel:
 
         # Create model
         self.model = tf.keras.Model(inputs=input, outputs=output)
-
-    def train(self, features, labels, learning_rate: float = 0.0001, epochs: int = 100):
-        es = callbacks.EarlyStopping(
-            monitor="loss",  # what to watch
-            patience=3,  # how many epochs to wait
-            min_delta=1e-4,  # any improvement smaller than this counts as no-op
-            mode="auto",  # 'min' for loss, 'max' for accuracy, or 'auto' to infer
-            restore_best_weights=True,  # after stopping, roll back to epoch with best monitored metric
-        )
-        self.model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
-            loss="binary_crossentropy",
-            metrics=["accuracy"],
-        )
-        self.model.fit(
-            features,
-            labels,
-            epochs=epochs,
-            batch_size=512,
-            # callbacks=[es],
-        )
-
-    def predict(self, features):
-        return self.model.predict(features)
-
-    def evaluate(self, features, labels):
-        return self.model.evaluate(features, labels)
-
-    def summary(self):
-        return self.model.summary()
-
-    def save(self, path: str):
-        self.model.save(path)
-
-    def _create_positional_encoding(self, seq_len, d_model):
-        """Create sinusoidal positional encoding"""
-        positions = np.arange(seq_len, dtype=np.float32)
-
-        # Broadcast to embedding dimension
-        pos_encoding = np.tile(positions.reshape(-1, 1), (1, d_model))
-
-        # Normalize to prevent large values
-        pos_encoding = pos_encoding / seq_len
-
-        return tf.constant(pos_encoding, dtype=tf.float32)

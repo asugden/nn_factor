@@ -7,7 +7,7 @@ from keras import layers
 from nn_factor.network_tools import default_model, positional_encoding, transformer
 
 
-class KleschevSelfAttnModel(default_model.DefaultModel):
+class KleshchevSelfAttnModel(default_model.DefaultModel):
     def __init__(
         self,
         max_M: int = 5,

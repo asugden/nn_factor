@@ -1,32 +1,25 @@
+from typing import Literal
+
 import numpy as np
 import sklearn.model_selection
 
-from nn_factor import (
-    factor_model_crossattn,
-    factor_model_crossattn_nomlp,
-    factor_model_pair_selfattn,
-    factor_model_selfattn_v2,
-    reader,
-)
+from nn_factor import pair_reader, partition_pair_model
 
 
 def test_model(
-    name: str,
+    attention_type: Literal["cross", "self"],
     X_train: np.ndarray,
     X_test: np.ndarray,
     y_train: np.ndarray,
     y_test: np.ndarray,
     epochs: int,
+    skip_mlp: bool = False,
+    activation_fn: Literal["relu", "gelu"] = "gelu",
 ) -> float:
     """Train single input model and return accuracy score"""
-    if name == "cross":
-        model = factor_model_crossattn.FactorModelCrossAttn()
-    if name == "cross_nomlp":
-        model = factor_model_crossattn_nomlp.FactorModelCrossAttnNoMLP()
-    elif name == "self":
-        model = factor_model_selfattn_v2.FactorModelSelfAttn()
-    elif name == "selfv1":
-        model = factor_model_pair_selfattn.FactorModelPairSelfAttn()
+    model = partition_pair_model.PartitionPairModel(
+        attention_type=attention_type, skip_mlp=skip_mlp, activation_fn=activation_fn
+    )
     print(model.summary())
     model.train(X_train, y_train, epochs=epochs)
     print(model.evaluate(X_test, y_test))
@@ -37,7 +30,7 @@ if __name__ == "__main__":
     data_path = "data/formatted_symmetric_group_data.txt"
 
     # Read in data
-    features, labels = reader.aligned_partitions(data_path)
+    features, labels = pair_reader.aligned_partitions(data_path)
     X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(
         features, labels, test_size=0.1, random_state=42
     )
@@ -55,6 +48,8 @@ if __name__ == "__main__":
 
     # Cross reaches 78% within 100 epochs, loss 0.4590
     #   maxes out at 83% after 354 epochs, loss 0.3554
+    #   switching to gelu maxes out at 93% after 815 epochs, loss 0.1683,
+    #   test set gets 91.4% accuracy
     # Self reaches 78% within 100 epochs, loss 0.4485
     #   maxes out at 88% after 519 epochs, loss 0.2704
     # Selfv1 reaches 75% within 100 epochs, loss 0.5031

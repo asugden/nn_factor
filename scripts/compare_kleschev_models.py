@@ -1,7 +1,7 @@
 from nn_factor import (
-    kleschev_cnn_model,
-    kleschev_crossattn_model,
-    kleschev_selfattn_model,
+    kleshchev_cnn_model,
+    kleshchev_crossattn_model,
+    kleshchev_selfattn_model,
 )
 
 if __name__ == "__main__":
@@ -9,7 +9,7 @@ if __name__ == "__main__":
     # model = kleschev_selfattn_model.KleschevSelfAttnModel(
     #     k_segment_as_multiplicative=True
     # )
-    model = kleschev_crossattn_model.KleschevCrossAttnModel(
+    model = kleshchev_crossattn_model.KleshchevCrossAttnModel(
         k_segment_as_multiplicative=True
     )
     model.summary()

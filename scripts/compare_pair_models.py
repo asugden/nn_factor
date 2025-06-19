@@ -3,7 +3,8 @@ from typing import Literal
 import numpy as np
 import sklearn.model_selection
 
-from nn_factor import pair_reader, partition_pair_model
+from nn_factor import partition_pair_model
+from nn_factor.readers import pair
 
 
 def test_model(
@@ -30,7 +31,7 @@ if __name__ == "__main__":
     data_path = "data/formatted_symmetric_group_data.txt"
 
     # Read in data
-    features, labels = pair_reader.aligned_partitions(data_path)
+    features, labels = pair.aligned_partitions(data_path)
     X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(
         features, labels, test_size=0.1, random_state=42
     )

@@ -15,6 +15,9 @@ class DefaultModel:
         labels: np.ndarray,
         learning_rate: float = 0.0001,
         epochs: int = 100,
+        loss="binary_crossentropy",
+        metrics=("accuracy"),
+        batch_size: int = 512,
     ) -> None:
         """Train the neural network with early stopping.
 
@@ -36,15 +39,16 @@ class DefaultModel:
         )
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
-            loss="binary_crossentropy",
-            metrics=["accuracy"],
+            loss=loss,
+            metrics=metrics,
         )
         self.model.fit(
             features,
             labels,
             epochs=epochs,
-            batch_size=512,
+            batch_size=batch_size,
             callbacks=[es],
+            shuffle=True,
         )
 
     def predict(self, features: np.ndarray) -> np.ndarray:

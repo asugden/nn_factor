@@ -66,7 +66,9 @@ class TransformerBlock(keras.layers.Layer):
             self.layernorm2 = keras.layers.LayerNormalization(epsilon=1e-6)
             self.dropout2 = keras.layers.Dropout(self.dropout_rate)
 
-    def call(self, inputs, training: bool, cross_inputs=None, attention_mask=None):
+    def call(
+        self, inputs, cross_inputs=None, attention_mask=None, training: bool = None
+    ):
         """Call is a function defined by superclass layers.Layer. It is
         run by __call__(). Specifically, this is a self-attention block.
 

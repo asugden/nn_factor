@@ -27,7 +27,7 @@ def test_model(
 
 
 if __name__ == "__main__":
-    epochs = 1000
+    epochs = 20
     data_path = "data/formatted_symmetric_group_data.txt"
 
     # Read in data
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(
         features, labels, test_size=0.1, random_state=42
     )
-    test_model("self", X_train, X_test, y_train, y_test, epochs)
+    test_model("cross", X_train, X_test, y_train, y_test, epochs)
 
     # Single input maxes out at 73% performance
     # Note that it is trained on just partitions, not aligned_partitions

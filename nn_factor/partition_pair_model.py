@@ -74,9 +74,9 @@ class PartitionPairModel(default_model.DefaultModel):
             x = transformer.TransformerBlock(
                 embed_dim=embed_dim,
                 key_dim=embed_dim,
-                value_dim=embed_dim,
+                # value_dim=embed_dim,
                 num_heads=num_heads,
-                ff_dim=ff_dim,
+                # ff_dim=ff_dim,
                 activation_fn=activation_fn,
                 skip_mlp=skip_mlp,
                 name="cross_attention",

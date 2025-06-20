@@ -100,9 +100,6 @@ def partition(vals: list[int] | np.ndarray | Partition, k: int = None, e: int = 
         return Partition(vals, k=k, e=e)
 
 
-5
-
-
 class MultiPartition:
     def __init__(
         self,

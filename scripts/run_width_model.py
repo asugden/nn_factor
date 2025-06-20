@@ -4,7 +4,7 @@ from nn_factor.readers import width
 if __name__ == "__main__":
     import sklearn.model_selection
 
-    epochs = 20
+    epochs = 40
     data_path = "data/width_data.csv"
 
     # Read in data

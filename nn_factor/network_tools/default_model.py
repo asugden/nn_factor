@@ -1,6 +1,5 @@
 import numpy as np
 import tensorflow as tf
-from keras import callbacks, layers
 
 from nn_factor.network_tools import transformer
 
@@ -30,7 +29,7 @@ class DefaultModel:
             epochs (int, optional): number of training epochs.
                 Defaults to 100.
         """
-        es = callbacks.EarlyStopping(
+        es = tf.keras.callbacks.EarlyStopping(
             monitor="loss",  # what to watch
             patience=10,  # how many epochs to wait
             min_delta=1e-4,  # any improvement smaller than this counts as no-op

@@ -2,7 +2,6 @@ from typing import Literal
 
 import numpy as np
 import tensorflow as tf
-from keras import layers
 
 from nn_factor.network_tools import default_model, positional_encoding, transformer
 
@@ -20,7 +19,7 @@ class KleshchevCNNModel(default_model.DefaultModel):
         # padded out to N with 0s and max_N with -1s.
         # If M < maxM, pad K to max_M with -1 and pad M*N to
         # max_M*max_N with -1
-        inputs = layers.Input(
+        inputs = tf.keras.layers.Input(
             shape=(max_M + max_M * max_N,), dtype=np.int32, name="inputs"
         )
         x = tf.cast(inputs, tf.float32, name="to_float")
@@ -55,14 +54,14 @@ class KleshchevCNNModel(default_model.DefaultModel):
         for i in range(layer_count):
             if layer_count < 5:
                 # Does not decrease the layer dimensions by 2
-                x = layers.Conv2D(
+                x = tf.keras.layers.Conv2D(
                     filter_dim if i > 2 or layer_count - i < 2 else filter_dim // 2,
                     (3, 3),
                     activation="relu",
                     padding="same",
                     name=f"conv_same_{i+1}",
                 )(x)
-            x = layers.Conv2D(
+            x = tf.keras.layers.Conv2D(
                 filter_dim if i > 2 or layer_count - i < 2 else filter_dim // 2,
                 (3, 3),
                 activation="relu",
@@ -70,18 +69,18 @@ class KleshchevCNNModel(default_model.DefaultModel):
             )(x)
 
         # Now we flatten
-        x = layers.Flatten()(x)
+        x = tf.keras.layers.Flatten()(x)
 
         # And do our traditional divide by 4 dense layer structure
-        x = layers.Dropout(0.1)(x)
-        x = layers.Dense(64, activation=activation_fn)(x)
-        x = layers.Dropout(0.1)(x)
-        x = layers.Dense(16, activation=activation_fn)(x)
-        x = layers.Dropout(0.1)(x)
-        x = layers.Dense(4, activation=activation_fn)(x)
+        x = tf.keras.layers.Dropout(0.1)(x)
+        x = tf.keras.layers.Dense(64, activation=activation_fn)(x)
+        x = tf.keras.layers.Dropout(0.1)(x)
+        x = tf.keras.layers.Dense(16, activation=activation_fn)(x)
+        x = tf.keras.layers.Dropout(0.1)(x)
+        x = tf.keras.layers.Dense(4, activation=activation_fn)(x)
 
         # Output layer
-        output = layers.Dense(1, activation="sigmoid", name="prediction")(x)
+        output = tf.keras.layers.Dense(1, activation="sigmoid", name="prediction")(x)
 
         # Create model
         self.model = tf.keras.Model(inputs=inputs, outputs=output)

@@ -2,7 +2,6 @@ from typing import Literal
 
 import numpy as np
 import tensorflow as tf
-from keras import layers
 
 from nn_factor.network_tools import default_model, positional_encoding, transformer
 
@@ -26,7 +25,7 @@ class KleshchevCrossAttnModel(default_model.DefaultModel):
         # padded out to N with 0s and max_N with -1s.
         # If M < maxM, pad K to max_M with -1 and pad M*N to
         # max_M*max_N with -1
-        inputs = layers.Input(
+        inputs = tf.keras.layers.Input(
             shape=(max_M + max_M * max_N,), dtype=np.int32, name="inputs"
         )
         x = tf.cast(inputs, tf.float32, name="to_float")
@@ -36,8 +35,8 @@ class KleshchevCrossAttnModel(default_model.DefaultModel):
         xs = tf.split(x, [max_N for _ in range(max_M)], axis=1)
 
         # Embed each of the integers of each X
-        self.embedder = layers.TimeDistributed(
-            layers.Dense(embed_dim, activation=activation_fn),
+        self.embedder = tf.keras.layers.TimeDistributed(
+            tf.keras.layers.Dense(embed_dim, activation=activation_fn),
             name=f"per_element_projection",
         )
         x = []
@@ -49,7 +48,9 @@ class KleshchevCrossAttnModel(default_model.DefaultModel):
 
         # And do self attention on each
         self.pos = positional_encoding.sinusoidal(max_N, embed_dim)
-        self.add_pos = layers.Lambda(lambda v: v + self.pos, name="add_position")
+        self.add_pos = tf.keras.layers.Lambda(
+            lambda v: v + self.pos, name="add_position"
+        )
         self.selfattn = transformer.TransformerBlock(
             embed_dim=embed_dim,
             key_dim=embed_dim // 2,
@@ -67,26 +68,28 @@ class KleshchevCrossAttnModel(default_model.DefaultModel):
         if not k_segment_as_multiplicative:
             # Via addition, they need to be embedded to the same
             # dimension as X
-            K_mat = layers.TimeDistributed(
-                layers.Dense(embed_dim, activation=activation_fn),
+            K_mat = tf.keras.layers.TimeDistributed(
+                tf.keras.layers.Dense(embed_dim, activation=activation_fn),
                 name="per_k_projection",
             )(K_mat)
 
             for i in range(len(xs)):
                 # Added dropout here to mimic the transformer architecture
-                xs[i] = layers.Dropout(dropout_rate)(xs[i])
-                xs[i] = layers.LayerNormalization(epsilon=1e-6)(xs[i] + K_mat[:, i, :])
+                xs[i] = tf.keras.layers.Dropout(dropout_rate)(xs[i])
+                xs[i] = tf.keras.layers.LayerNormalization(epsilon=1e-6)(
+                    xs[i] + K_mat[:, i, :]
+                )
         else:
             # If we concatenate them, then first we embed segment and
             # K_mat to smaller dimensions
-            K_mat = layers.TimeDistributed(
-                layers.Dense(k_segment_mult_dim, activation=activation_fn),
+            K_mat = tf.keras.layers.TimeDistributed(
+                tf.keras.layers.Dense(k_segment_mult_dim, activation=activation_fn),
                 name="per_k_projection",
             )(K_mat)
 
             for i in range(len(xs)):
                 # Then concatenate the vectors
-                concat = layers.Concatenate(axis=-1, name=f"concat_k_seg_{i}")(
+                concat = tf.keras.layers.Concatenate(axis=-1, name=f"concat_k_seg_{i}")(
                     [
                         xs[i],
                         tf.tile(tf.expand_dims(K_mat[:, i, :], axis=1), [1, max_N, 1]),
@@ -94,13 +97,13 @@ class KleshchevCrossAttnModel(default_model.DefaultModel):
                 )
 
                 # And re-project to embed_dim dimensions
-                xs[i] = layers.Dense(
+                xs[i] = tf.keras.layers.Dense(
                     embed_dim, activation=activation_fn, name=f"reproject_k_seg_{i}"
                 )(concat)
 
                 # Add dropout here to ensure consistency between labeling
                 # techniques
-                xs[i] = layers.Dropout(dropout_rate)(xs[i])
+                xs[i] = tf.keras.layers.Dropout(dropout_rate)(xs[i])
 
         # Cross-attention transformer
         # # NOTE: It may be important to have sequential transformers
@@ -131,18 +134,18 @@ class KleshchevCrossAttnModel(default_model.DefaultModel):
                 xs[i] = self.crossattn(xs[i], cross_inputs=xs[i - dist])
 
         # Average pool the embeddings
-        x = layers.GlobalAveragePooling1D()(tf.concat(xs, axis=1))
+        x = tf.keras.layers.GlobalAveragePooling1D()(tf.concat(xs, axis=1))
 
         # And do our traditional divide by 4 dense layer structure
-        x = layers.Dropout(0.1)(x)
-        x = layers.Dense(64, activation=activation_fn)(x)
-        x = layers.Dropout(0.1)(x)
-        x = layers.Dense(16, activation=activation_fn)(x)
-        x = layers.Dropout(0.1)(x)
-        x = layers.Dense(4, activation=activation_fn)(x)
+        x = tf.keras.layers.Dropout(0.1)(x)
+        x = tf.keras.layers.Dense(64, activation=activation_fn)(x)
+        x = tf.keras.layers.Dropout(0.1)(x)
+        x = tf.keras.layers.Dense(16, activation=activation_fn)(x)
+        x = tf.keras.layers.Dropout(0.1)(x)
+        x = tf.keras.layers.Dense(4, activation=activation_fn)(x)
 
         # Output layer
-        output = layers.Dense(1, activation="sigmoid", name="prediction")(x)
+        output = tf.keras.layers.Dense(1, activation="sigmoid", name="prediction")(x)
 
         # Create model
         self.model = tf.keras.Model(inputs=inputs, outputs=output)

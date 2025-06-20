@@ -3,7 +3,7 @@
 import os
 import platform
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 # Run with python setup.py develop --user
 
@@ -27,7 +27,7 @@ Topic :: Scientific/Engineering
 setup(
     name="nn_factor",
     version="0.1",
-    packages=["nn_factor"],
+    packages=find_packages(),  # <= will grab nn_factor + subfolders
     #   scripts = [''],
     #
     # Project uses reStructuredText, so ensure that the docutils get

@@ -60,7 +60,7 @@ class Partition:
 
         if integrity_check:
             sorted = np.sort(self.p)[::-1]
-            if sorted != self.p:
+            if not np.all(sorted == self.p):
                 raise ValueError("Hey stupid, the order is wrong")
 
     def residue(self, row: int, col: int) -> int | None:
@@ -97,7 +97,8 @@ def partition(vals: list[int] | np.ndarray | Partition, k: int = None, e: int = 
             vals.k = k
         return vals
     else:
-        return Partition(vals, k=k, e=e)
+        out = Partition(vals, k=k, e=e)
+        return out
 
 
 class MultiPartition:
@@ -144,5 +145,6 @@ class MultiPartition:
 if __name__ == "__main__":
     a = Partition([3, 3, 2, 1, 0, 0])
     a2 = Partition([1, 2, 1, 0, 0, 0])
+    a = partition([3, 3, 2])
     b = MultiPartition([a, a2], [1, 0])
     print(b)

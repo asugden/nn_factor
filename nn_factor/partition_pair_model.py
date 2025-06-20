@@ -21,17 +21,20 @@ class PartitionPairModel(default_model.DefaultModel):
         inputs = tf.keras.layers.Input(
             shape=(feature_dim,), dtype=np.int32, name="inputs"
         )
-        x = tf.cast(inputs, tf.float32, name="to_float")  # (batch, 36) → floats
+        x = tf.keras.layers.Lambda(lambda v: tf.cast(v, tf.float32, name="to_float"))(
+            inputs
+        )
 
         # Split into the two inputs
-        x1, x2 = tf.split(
-            x, [feature_dim // 2, feature_dim // 2], axis=1, name="split_arrays"
-        )
+        x1, x2 = tf.keras.layers.Lambda(
+            lambda v: tf.split(v, [feature_dim // 2, feature_dim // 2], axis=1),
+            name="split_arrays",
+        )(x)
 
         # We can either do "global projection" or "per-element projection".
         # For a transformer, we need to have per-element projection.
-        x1 = tf.expand_dims(x1, -1)
-        x2 = tf.expand_dims(x2, -1)
+        x1 = tf.keras.layers.Lambda(lambda v: tf.expand_dims(v, -1))(x1)
+        x2 = tf.keras.layers.Lambda(lambda v: tf.expand_dims(v, -1))(x2)
 
         # Embed the inputs so that we can use the transformer
         self.embedder = tf.keras.layers.TimeDistributed(

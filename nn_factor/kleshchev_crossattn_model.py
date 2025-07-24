@@ -9,7 +9,7 @@ from nn_factor.network_tools import default_model, positional_encoding, transfor
 class KleshchevCrossAttnModel(default_model.DefaultModel):
     def __init__(
         self,
-        max_M: int = 5,
+        max_M: int = 10,
         max_N: int = 20,
         embed_dim: int = 64,
         num_heads: int = 8,
@@ -28,11 +28,19 @@ class KleshchevCrossAttnModel(default_model.DefaultModel):
         inputs = tf.keras.layers.Input(
             shape=(max_M + max_M * max_N,), dtype=np.int32, name="inputs"
         )
-        x = tf.cast(inputs, tf.float32, name="to_float")
+        x = tf.keras.layers.Lambda(lambda v: tf.cast(v, tf.float32, name="to_float"))(
+            inputs
+        )
 
         # Split into the two inputs, K and x
-        K_vec, x = tf.split(x, [max_M, max_M * max_N], axis=1)
-        xs = tf.split(x, [max_N for _ in range(max_M)], axis=1)
+        K_vec, x = tf.keras.layers.Lambda(
+            lambda v: tf.split(v, [max_M, max_M * max_N], axis=1),
+            name="split_arrays",
+        )(x)
+        xs = tf.keras.layers.Lambda(
+            lambda v: tf.split(v, [max_N for _ in range(max_M)], axis=1),
+            name="split_partitions",
+        )(x)
 
         # Embed each of the integers of each X
         self.embedder = tf.keras.layers.TimeDistributed(
@@ -41,7 +49,7 @@ class KleshchevCrossAttnModel(default_model.DefaultModel):
         )
         x = []
         for i in range(len(xs)):
-            x_i = tf.expand_dims(xs[i], -1)
+            x_i = tf.keras.layers.Lambda(lambda v: tf.expand_dims(v, -1))(xs[i])
             x_i = self.embedder(x_i)
             x.append(x_i)
         xs = x
@@ -64,7 +72,7 @@ class KleshchevCrossAttnModel(default_model.DefaultModel):
             xs[i] = self.selfattn(xs[i])
 
         # Now we have to either add our k values or concatenate them
-        K_mat = tf.expand_dims(K_vec, -1)
+        K_mat = tf.keras.layers.Lambda(lambda v: tf.expand_dims(v, -1))(K_vec)
         if not k_segment_as_multiplicative:
             # Via addition, they need to be embedded to the same
             # dimension as X

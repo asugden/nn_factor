@@ -26,7 +26,7 @@ Topic :: Scientific/Engineering
 """
 setup(
     name="nn_factor",
-    version="0.12",
+    version="0.13",
     packages=find_packages(),  # <= will grab nn_factor + subfolders
     #   scripts = [''],
     #

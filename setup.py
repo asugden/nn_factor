@@ -26,15 +26,15 @@ Topic :: Scientific/Engineering
 """
 setup(
     name="nn_factor",
-    version="0.11",
+    version="0.12",
     packages=find_packages(),  # <= will grab nn_factor + subfolders
     #   scripts = [''],
     #
     # Project uses reStructuredText, so ensure that the docutils get
     # installed or upgraded on the target machine
     install_requires=[
-        "numpy>=1.22.4",
-        "pandas>=1.4.2",
+        # "numpy>=1.22.4",
+        # "pandas>=1.4.2",
     ],
     scripts=scripts,
     author="Arthur Sugden",

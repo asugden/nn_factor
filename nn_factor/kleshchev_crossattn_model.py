@@ -149,7 +149,9 @@ class KleshchevCrossAttnModel(default_model.DefaultModel):
                 xs[i] = self.crossattn(xs[i], cross_inputs=xs[i - dist])
 
         # Average pool the embeddings
-        x = tf.keras.layers.GlobalAveragePooling1D()(tf.concat(xs, axis=1))
+        x = tf.keras.layers.GlobalAveragePooling1D()(
+            tf.keras.layers.Concatenate(axis=1)(xs)
+        )
 
         # And do our traditional divide by 4 dense layer structure
         x = tf.keras.layers.Dropout(0.1)(x)

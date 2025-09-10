@@ -15,7 +15,7 @@ class DefaultModel:
         learning_rate: float = 0.0001,
         epochs: int = 100,
         loss="binary_crossentropy",
-        metrics=("accuracy"),
+        metrics=("accuracy", ),
         batch_size: int = 512,
     ) -> None:
         """Train the neural network with early stopping.
@@ -39,7 +39,7 @@ class DefaultModel:
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
             loss=loss,
-            metrics=metrics,
+            metrics=list(metrics),
         )
         self.model.fit(
             features,

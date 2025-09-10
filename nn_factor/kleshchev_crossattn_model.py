@@ -97,12 +97,19 @@ class KleshchevCrossAttnModel(default_model.DefaultModel):
 
             for i in range(len(xs)):
                 # Then concatenate the vectors
-                concat = tf.keras.layers.Concatenate(axis=-1, name=f"concat_k_seg_{i}")(
-                    [
-                        xs[i],
-                        tf.tile(tf.expand_dims(K_mat[:, i, :], axis=1), [1, max_N, 1]),
-                    ]
+                tile_expand = tf.keras.layers.Lambda(
+                    lambda x: tf.tile(tf.expand_dims(x[:, i, :], axis=1), [1, max_N, 1])
                 )
+                concat = tf.keras.layers.Concatenate(axis=-1, name=f"concat_k_seg_{i}")(
+                    [xs[i], tile_expand(K_mat)]
+                )
+
+                # concat = tf.keras.layers.Concatenate(axis=-1, name=f"concat_k_seg_{i}")(
+                #     [
+                #         xs[i],
+                #         tf.tile(tf.expand_dims(K_mat[:, i, :], axis=1), [1, max_N, 1]),
+                #     ]
+                # )
 
                 # And re-project to embed_dim dimensions
                 xs[i] = tf.keras.layers.Dense(

@@ -32,10 +32,7 @@ setup(
     #
     # Project uses reStructuredText, so ensure that the docutils get
     # installed or upgraded on the target machine
-    install_requires=[
-        "numpy>=1.22.4",
-        "pandas>=1.4.2",
-    ],
+    install_requires=["numpy>=1.22.4", "pandas>=1.4.2", "tensorflow~=2.9.3"],
     scripts=scripts,
     author="Arthur Sugden",
     author_email="sugdena@duq.edu",

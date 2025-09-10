@@ -26,7 +26,7 @@ Topic :: Scientific/Engineering
 """
 setup(
     name="nn_factor",
-    version="0.13",
+    version="0.14",
     packages=find_packages(),  # <= will grab nn_factor + subfolders
     #   scripts = [''],
     #
@@ -36,7 +36,7 @@ setup(
         "numpy>=2.2.6",
         "pandas>=2.3.2",
         "tensorflow>=2.20.0",
-        "sklearn>=1.7.2"
+        "scikit-learn>=1.7.2"
     ],
     scripts=scripts,
     author="Arthur Sugden",

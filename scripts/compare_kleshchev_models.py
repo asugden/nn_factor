@@ -24,13 +24,13 @@ if __name__ == "__main__":
         features, labels, test_size=0.1, random_state=42
     )
 
-    # model = kleschev_cnn_model.KleschevCNNModel()
-    # model = kleschev_selfattn_model.KleschevSelfAttnModel(
+    model = kleshchev_cnn_model.KleshchevCNNModel()
+    # model = kleshchev_selfattn_model.KleshchevSelfAttnModel(
     #     k_segment_as_multiplicative=True
     # )
-    model = kleshchev_crossattn_model.KleshchevCrossAttnModel(
-        k_segment_as_multiplicative=True, max_M=10, max_N=20
-    )
+    # model = kleshchev_crossattn_model.KleshchevCrossAttnModel(
+    #     k_segment_as_multiplicative=True, max_M=10, max_N=20
+    # )
     print(model.summary())
     model.train(X_train, y_train, epochs=epochs)
     print(model.evaluate(X_test, y_test))

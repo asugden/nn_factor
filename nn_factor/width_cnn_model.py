@@ -14,8 +14,10 @@ class WidthCNNModel(default_model.DefaultModel):
         dropout_rate: float = 0.1,
     ):
         inputs = tf.keras.layers.Input(shape=(w,), dtype=np.int32, name="inputs")
-        x = tf.cast(inputs, tf.float32, name="to_float")
-        x = tf.expand_dims(x, -1)
+        x = tf.keras.layers.Lambda(lambda v: tf.cast(v, tf.float32, name="to_float"))(
+            inputs
+        )
+        x = tf.keras.layers.Lambda(lambda v: tf.expand_dims(v, -1))(x)
 
         layer_count = w // (filter_size - 1) - 1
         # Remember, traditional Conv layers decrease each dimension by

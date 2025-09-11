@@ -30,13 +30,18 @@ class KleshchevSelfAttnModel(default_model.DefaultModel):
         inputs = tf.keras.layers.Input(
             shape=(max_N * 3,), dtype=np.int32, name="inputs"
         )
-        x = tf.cast(inputs, tf.float32, name="to_float")
+        x = tf.keras.layers.Lambda(lambda v: tf.cast(v, tf.float32, name="to_float"))(
+            inputs
+        )
 
         # Split into the two inputs, K and x
-        K_mat, x, segment = tf.split(x, [max_N, max_N, max_N], axis=1)
-        K_mat = tf.expand_dims(K_mat, -1)
-        x = tf.expand_dims(x, -1)
-        segment = tf.expand_dims(segment, -1)
+        K_mat, x, segment = tf.keras.layers.Lambda(
+            lambda v: tf.split(v, [max_N, max_N, max_N], axis=1),
+            name="split_arrays",
+        )(x)
+        K_mat = tf.keras.layers.Lambda(lambda v: tf.expand_dims(v, -1))(K_mat)
+        x = tf.keras.layers.Lambda(lambda v: tf.expand_dims(v, -1))(x)
+        segment = tf.keras.layers.Lambda(lambda v: tf.expand_dims(v, -1))(segment)
 
         # For self-attention, we can create a vector of length max_N and
         # do all computations within it. It should also bring the -1s

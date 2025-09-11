@@ -63,9 +63,10 @@ def compress_mcmp(
     keep_positions = mp > 0
     for i in range(multicharge_size):
         keep_positions[i * partition_of] = True
-    compressed.append(mc_values[keep_positions])
-    compressed.append(mp[keep_positions])
-    compressed.append(pos_values[keep_positions])
+    kept = np.sum(keep_positions)
+    compressed.append(np.pad(mc_values[keep_positions], (0, partition_of - kept + 1), 'constant', constant_values=-1))
+    compressed.append(np.pad(mp[keep_positions], (0, partition_of - kept + 1), 'constant', constant_values=-1))
+    compressed.append(np.pad(pos_values[keep_positions], (0, partition_of - kept + 1), 'constant', constant_values=-1))
     return np.array(compressed).flatten()
 
 

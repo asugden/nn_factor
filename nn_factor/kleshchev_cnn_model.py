@@ -9,7 +9,7 @@ from nn_factor.network_tools import default_model, positional_encoding, transfor
 class KleshchevCNNModel(default_model.DefaultModel):
     def __init__(
         self,
-        max_M: int = 5,
+        max_M: int = 10,
         max_N: int = 20,
         filter_dim: int = 32,
         activation_fn: str = "relu",
@@ -22,20 +22,35 @@ class KleshchevCNNModel(default_model.DefaultModel):
         inputs = tf.keras.layers.Input(
             shape=(max_M + max_M * max_N,), dtype=np.int32, name="inputs"
         )
-        x = tf.cast(inputs, tf.float32, name="to_float")
+        x = tf.keras.layers.Lambda(lambda v: tf.cast(v, tf.float32, name="to_float"))(
+            inputs
+        )
 
         # Split into the two inputs, K and x
-        K_vec, x = tf.split(x, [max_M, max_M * max_N], axis=1)
+        K_vec, x = tf.keras.layers.Lambda(
+            lambda v: tf.split(v, [max_M, max_M * max_N], axis=1),
+            name="split_arrays",
+        )(x)
 
-        # Tile K to produce a second channel, and combine with x
-        # We have to take into account the batch dimension
-        K_mat = tf.tile(
-            tf.expand_dims(K_vec, axis=1), [1, max_N, 1]
-        )  # (batch, max_N, max_M)
-        x = tf.reshape(x, (-1, max_N, max_M))  # (batch, max_N, max_M)
+        K_mat = tf.keras.layers.Lambda(
+            lambda k: tf.tile(tf.expand_dims(k, axis=1), [1, max_N, 1]),
+            name="tile_k"
+            )(K_vec)
+        # K_mat = tf.tile(
+        #     tf.expand_dims(K_vec, axis=1), [1, max_N, 1]
+        # )  # (batch, max_N, max_M)
+        x = tf.keras.layers.Lambda(
+            lambda x: tf.reshape(x, (-1, max_N, max_M)),
+            name="reshape_x"
+            )(x)
+        # x = tf.reshape(x, (-1, max_N, max_M))  # (batch, max_N, max_M)
 
         # For a CNN, we will use the K vector as a channel of the matrix
-        x = tf.stack([K_mat, x], axis=-1)  # (batch, max_N, max_M, 2)
+        x = tf.keras.layers.Lambda(
+            lambda tensors: tf.stack(tensors, axis=-1),
+            name="stack_k_x"
+            )([K_mat, x])
+        # x = tf.stack([K_mat, x], axis=-1)  # (batch, max_N, max_M, 2)
 
         # NOTE: As of now, we are using a single additional channel.
         # If we would like, we can expand this to an embedding of 0 and
